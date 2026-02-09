@@ -50,7 +50,7 @@ theorem erdos_1097.variants.weaker :
   sorry
 
 /--
-A trivial lower bound: there exist sets $A$ with $|A| = n$ that contain at least $\Omega(n)$
+A trivial lower bound: for sufficiently large `n` there exist sets $A$ with $|A| = n$ that contain at least $\Omega(n)$
 distinct common differences of three-term arithmetic progressions.
 -/
 @[category undergraduate, AMS 11]
