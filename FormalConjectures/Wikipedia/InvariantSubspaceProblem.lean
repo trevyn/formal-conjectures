@@ -63,7 +63,41 @@ closure of the linear span of the orbit of any single non-zero vector. -/
 theorem Invariant_subspace_problem_non_separable [InnerProductSpace ℂ H] [CompleteSpace H]
     (h : ¬TopologicalSpace.SeparableSpace H) (T : H →L[ℂ] H) :
     Nonempty (ClosedInvariantSubspace T) := by
-  sorry
+  haveI : Nontrivial H := by
+    by_contra hnt
+    rw [not_nontrivial_iff_subsingleton] at hnt; haveI := hnt
+    exact h ⟨⟨{0}, Set.countable_singleton _, by
+      rw [dense_iff_closure_eq]; ext x; simp [show x = 0 from Subsingleton.eq_zero x]⟩⟩
+  obtain ⟨x, hx⟩ := exists_ne (0 : H)
+  -- W = closure of span of orbit {x, Tx, T²x, ...}
+  set S := Set.range (fun n : ℕ => (T ^ n) x) with hS_def
+  set W := (Submodule.span ℂ S).topologicalClosure with hW_def
+  refine ⟨⟨W, ?_, ?_, ?_, ?_⟩⟩
+  · -- ne_bot: x ∈ W and x ≠ 0
+    intro hbot
+    have : x ∈ (⊥ : Submodule ℂ H) := hbot ▸
+      Submodule.le_topologicalClosure _ (Submodule.subset_span ⟨0, by simp⟩)
+    simp at this; exact hx this
+  · -- ne_top: W is separable (orbit countable → span separable → closure separable) but H isn't
+    intro heq; apply h
+    have hsep : TopologicalSpace.IsSeparable (W : Set H) := by
+      show TopologicalSpace.IsSeparable (closure (Submodule.span ℂ S : Set H))
+      exact ((Set.countable_range _).isSeparable).span.closure
+    rw [heq, Submodule.top_coe] at hsep
+    rwa [TopologicalSpace.isSeparable_univ_iff] at hsep
+  · -- is_closed
+    show IsClosed (closure _); exact isClosed_closure
+  · -- is_fixed: T maps orbit into orbit, hence span into span, hence closure into closure
+    show W.map T ≤ W
+    calc Submodule.map T (Submodule.span ℂ S).topologicalClosure
+        ≤ (Submodule.map T (Submodule.span ℂ S)).topologicalClosure :=
+            Submodule.topologicalClosure_map T _
+      _ ≤ (Submodule.span ℂ S).topologicalClosure := by
+            apply Submodule.topologicalClosure_mono
+            rw [Submodule.map_span]
+            apply Submodule.span_mono
+            rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+            exact ⟨n + 1, by show (T ^ (n + 1)) x = (T * T ^ n) x; rw [pow_succ']⟩
 
 /--
 Every normal linear operator `T : H → H` on a Hilbert space `H` of dimension at least 2 has a
